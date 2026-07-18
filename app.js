@@ -26,12 +26,15 @@
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const isLetters = (s) => /^[A-Z]+$/.test(s);
 
+  const baseUrlHelpers = globalThis.WordleBaseUrl || {};
+
   function parseConfig(search) {
     const params = new URLSearchParams(search);
     const len   = clamp(parseInt(params.get('len')   ?? DEFAULTS.len,   10) || DEFAULTS.len,   ...LIMITS.len);
     const tries = clamp(parseInt(params.get('tries') ?? DEFAULTS.tries, 10) || DEFAULTS.tries, ...LIMITS.tries);
     const dictPath = params.get('dict') || DEFAULTS.dictPath;
-    const rawWord = (params.get('word') || '').trim().toUpperCase();
+    const tokenWord = baseUrlHelpers.decodePuzzleToken ? baseUrlHelpers.decodePuzzleToken(params.get('puzzle')) : null;
+    const rawWord = (tokenWord ? tokenWord.word : (params.get('word') || '').trim().toUpperCase());
 
     if (!rawWord) {
       return { mode: 'host', len, tries, dictPath, word: null };
@@ -42,7 +45,10 @@
     return { mode: 'player', len, tries, dictPath, word: rawWord };
   }
 
-  const baseUrlHelpers = globalThis.WordleBaseUrl || {};
+  function hasPuzzleQuery(search) {
+    const params = new URLSearchParams(search);
+    return Boolean(params.get('puzzle') || params.get('word'));
+  }
 
   function buildAppBaseUrl(currentUrl = location.href) {
     return baseUrlHelpers.appBaseUrl ? baseUrlHelpers.appBaseUrl(currentUrl) : currentUrl;
@@ -185,6 +191,8 @@
 
     $('#player-view').hidden = false;
     $('#host-view').hidden = true;
+    $('#host-view').style.display = 'none';
+    $('#player-view').style.display = 'block';
 
     const board = $('#board');
     board.innerHTML = '';
@@ -380,7 +388,7 @@
     a.addEventListener('click', (e) => {
       e.preventDefault();
       clearState(stateKey(ctxCfg));
-      location.href = location.pathname;
+      location.href = buildAppBaseUrl(location.href);
     });
     return a;
   }
@@ -565,6 +573,8 @@
     $('#app').dataset.mode = 'host';
     $('#host-view').hidden = false;
     $('#player-view').hidden = true;
+    $('#host-view').style.display = 'block';
+    $('#player-view').style.display = 'none';
 
     // Preload the dictionary so we can validate the host's chosen word.
     dict = await loadDictionary(cfg.dictPath);
@@ -634,8 +644,9 @@
 
   function boot() {
     const cfg = parseConfig(location.search);
-    if (cfg.mode === 'host') bootHost(cfg);
-    else                     bootPlayer(cfg);
+    const shouldShowPlayer = hasPuzzleQuery(location.search) && cfg.mode === 'player';
+    if (shouldShowPlayer) bootPlayer(cfg);
+    else                  bootHost(cfg);
   }
 
   if (document.readyState === 'loading') {
