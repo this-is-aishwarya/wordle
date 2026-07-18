@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Wordle</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app" class="app" data-mode="loading">
+
+    <!-- HOST MODE: shown when no `?word=` in the URL -->
+    <section id="host-view" class="view host-view" hidden>
+      <h1 class="title">Wordle</h1>
+      <p class="subtitle">Make a puzzle for a friend. Pick a word, get a link, share it.</p>
+
+      <form id="host-form" class="host-form" autocomplete="off" novalidate>
+        <label class="field">
+          <span class="field-label">Word</span>
+          <input
+            id="host-word"
+            class="field-input"
+            type="text"
+            inputmode="text"
+            autocapitalize="characters"
+            spellcheck="false"
+            placeholder="e.g. APPLE"
+            maxlength="8"
+            required
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Length</span>
+            <input id="host-len" class="field-input" type="number" min="3" max="8" value="5" />
+          </label>
+          <label class="field">
+            <span class="field-label">Tries</span>
+            <input id="host-tries" class="field-input" type="number" min="3" max="12" value="6" />
+          </label>
+        </div>
+
+        <p id="host-error" class="host-error" role="alert" aria-live="polite" hidden></p>
+
+        <button id="host-submit" class="btn btn-primary" type="submit">Generate link</button>
+      </form>
+
+      <div id="host-result" class="host-result" hidden>
+        <p class="host-result-label">Your puzzle link</p>
+        <div class="host-link-row">
+          <input id="host-link" class="field-input host-link" type="text" readonly />
+          <button id="host-copy" class="btn" type="button">Copy</button>
+        </div>
+        <p class="host-hint">Open this in another browser to play. (Already copied to your clipboard.)</p>
+        <a id="host-open" class="btn btn-ghost" href="#" target="_blank" rel="noopener">Open as player</a>
+      </div>
+    </section>
+
+    <!-- PLAYER MODE: shown when `?word=...` is valid -->
+    <section id="player-view" class="view player-view" hidden>
+      <header class="header">
+        <button id="back-to-host" class="icon-btn" type="button" aria-label="Back to host form" title="Back to host form">←</button>
+        <h1 class="title title-inline">Wordle</h1>
+        <span class="header-spacer" aria-hidden="true"></span>
+      </header>
+
+      <div id="banner" class="banner" hidden aria-live="polite"></div>
+
+      <div
+        id="board"
+        class="board"
+        role="grid"
+        aria-label="Wordle board"
+      ></div>
+
+      <div id="message" class="message" role="status" aria-live="polite" aria-atomic="true"></div>
+
+      <div id="keyboard" class="keyboard" role="group" aria-label="On-screen keyboard"></div>
+    </section>
+  </main>
+
+  <script src="base_url.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
