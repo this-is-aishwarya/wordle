@@ -404,17 +404,23 @@
     });
   }
 
+  function normalizeAction(input) {
+    const value = String(input || '').trim();
+    if (!value) return null;
+
+    const upper = value.toUpperCase();
+    if (upper === 'ENTER' || upper === 'RETURN') return 'ENTER';
+    if (upper === 'BACKSPACE' || upper === 'DELETE') return 'BACKSPACE';
+    if (upper.length === 1 && /^[A-Z]$/.test(upper)) return upper;
+    return null;
+  }
+
   function onKey(e) {
-    if (state.status !== 'playing') return;
-    const k = e.key || '';
-    let action = null;
-    if (k === 'Enter')      action = 'ENTER';
-    else if (k === 'Backspace') action = 'BACKSPACE';
-    else {
-      const ch = (k.length === 1 ? k : '').toUpperCase();
-      if (isLetters(ch)) action = ch;
-    }
+    if (state?.status !== 'playing') return;
+
+    const action = normalizeAction(e.key || e.code || e.target?.dataset?.key || '');
     if (!action) return;
+
     if (e.preventDefault) e.preventDefault();
     handleAction(action);
   }
